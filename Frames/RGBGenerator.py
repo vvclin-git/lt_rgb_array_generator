@@ -113,7 +113,7 @@ class RGBGenerator(Frame):
     def preview(self):        
         array_paras = self.array_para_tab.output_parsed_vals()
         array_im, output_msg = self.gen_array(array_paras)
-        self.preview_canvas.update_im(chart_im)
+        self.preview_canvas.update_im(array_im)
         self.controller.msg_box.console(output_msg)
         return
     
@@ -122,9 +122,9 @@ class RGBGenerator(Frame):
     def lt_set(self):
         return
     def gen_array(self, para_list):                
-        
+        array_im, output_msg = gen_array(*para_list)
         # chart_im, output_msg, _ = CHART_FN_DICT[chart_type](*para_list)        
-        return chart_im, output_msg
+        return array_im, output_msg
 
     def output(self):        
         output_path = self.output_path.get_path()
