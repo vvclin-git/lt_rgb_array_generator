@@ -1,12 +1,5 @@
 import numpy as np
 import cv2
-import textwrap
-import time
-
-def calculate_dim(px_size, px_pitch, px_num):
-    # Calculate dimension
-    return (px_size[0] + px_pitch[0] * (px_num[0] - 1), 
-            px_size[1] + px_pitch[1] * (px_num[1] - 1))
 
 def gen_LT_grid_fn(px_scale, px_num, px_pitch, px_size):    
     px_pitch = (np.array(px_pitch) * px_scale).astype('uint')

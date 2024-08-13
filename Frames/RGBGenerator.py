@@ -147,7 +147,7 @@ class RGBGenerator(Frame):
         for i, c in enumerate(['R', 'G', 'B']):             
             np.savetxt(f'{output_path}\\{output_fn}_{c}_{timestr}.txt', array_im[:, :, i], fmt='%d', delimiter=' ', header=header, comments='')
         self.controller.msg_box.console(f'Exporting {output_fn}_{timestr}.png...', cr=False)
-        stat = cv2.imwrite(f'{output_path}\\{output_fn}_{timestr}.png', array_im)
+        stat = cv2.imwrite(f'{output_path}\\{output_fn}_{timestr}.png', cv2.cvtColor(array_im, cv2.COLOR_RGB2BGR))
         if stat:
             self.controller.msg_box.console(f'Done', cr=True)        
         else:
