@@ -13,6 +13,8 @@ from Widgets import ParameterTab
 from PIL import Image, ImageTk
 from Widgets.ZoomCanvas import *
 
+from LightTools import LTAPIx
+from LightTools.helpers import LT_Error
 
 OUTPUT_PATH = f'{os.getcwd()}\\Output'
 PRESET_PATH = f'{os.getcwd()}\\Presets\\parameters.json'
@@ -91,6 +93,9 @@ class RGBGenerator(Frame):
         self.preview_btn.pack(side='right', padx=2, pady=5)
 
         # LT Link & RGB Array Application
+        self.lt_error = LT_Error()
+        self.loc = LTAPIx.LTLocator()
+        self.lt = None
         self.lt_frame = LabelFrame(self.settings, text='LightTools')
         self.lt_frame.pack(side='top', expand=1, fill='x')
         self.lt_link_para_tab = ParameterTab(self.lt_frame, lt_paras)
@@ -121,8 +126,24 @@ class RGBGenerator(Frame):
         return
     
     def lt_link(self):
+        lt_paras = self.lt_link_para_tab.output_parsed_vals()
+        pid = lt_paras[0]
+        self.lt = self.loc.GetLTAPIFromPID(pid)
+        if self.lt is not None:
+            stat = self.lt.Message('Script LT connection established')        
+            self.controller.msg_box.console(f'Connected to LT PID {pid}')
+        else:            
+            self.controller.msg_box.console(f'Failed to connect to LT PID {pid}')
         return
+    
     def lt_set(self):
+        self.lt
+        apod_file_path_key = f'LENS_MANAGER[1].COMPONENTS[Components].GROUP[group_Freeform_PBS_KF_2D_Complete].GROUP[group_RGB_24um_1.92x1.95].CUBE_SURFACE_SOURCE[CuboidSource_{color}_1].NATIVE_EMITTER[RightSurface].SURFACE_GRID_APODIZER[SurfaceGridApodizer]'
+        apod_fn = replace_color(a, color)
+        print(f'Setting up apod file as: {apod_fn}')
+        lt.DbSet(apod_file_path_key, 'LoadFileName', f"D:\\Garden\\Wayne\\Python\\LT Freeform\\Apod Files\\{apod_fn}.txt")
+        lt.DbSet(apod_file_path_key, 'LoadFileName', f"D:\\Garden\\Wayne\\Python\\LT Freeform\\Apod Files\\{apod_fn}.txt")
+        lt.DbSet(apod_file_path_key, 'LoadFileName', f"D:\\Garden\\Wayne\\Python\\LT Freeform\\Apod Files\\{apod_fn}.txt")
         return
     def gen_array(self, para_list):                
         array_im, output_msg = gen_array(*para_list)
