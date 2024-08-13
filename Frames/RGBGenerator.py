@@ -1,7 +1,7 @@
 import imp
 import os
 from tkinter import filedialog
-import rgb_array_generator
+from rgb_array_generator import gen_array, draw_pixel_frame, gen_LT_grid_fn
 import re
 import time
 import json
@@ -113,6 +113,9 @@ class RGBGenerator(Frame):
     def preview(self):        
         array_paras = self.array_para_tab.output_parsed_vals()
         array_im, output_msg = self.gen_array(array_paras)
+        preview_box_paras = [array_paras[0], array_paras[2], array_paras[3]]
+        array_im = draw_pixel_frame(array_im, *preview_box_paras)
+        array_im = cv2.cvtColor(array_im, cv2.COLOR_BGR2RGB)
         self.preview_canvas.update_im(array_im)
         self.controller.msg_box.console(output_msg)
         return
@@ -123,55 +126,34 @@ class RGBGenerator(Frame):
         return
     def gen_array(self, para_list):                
         array_im, output_msg = gen_array(*para_list)
-        # chart_im, output_msg, _ = CHART_FN_DICT[chart_type](*para_list)        
+        # chart_im, output_msg, _ = CHART_FN_DICT[chart_type](*para_list)
         return array_im, output_msg
 
     def output(self):        
         output_path = self.output_path.get_path()
         if len(output_path) == 0:
             self.controller.msg_box.console('No file output, output path not specified')
-            return
-        output_name = ''
-        timestr = time.strftime("%Y%m%d-%H-%M-%S")
-        
-        array_paras, variant = self.array_para_tree.output_parsed_vals(preview=False)
-        self.controller.msg_box.console(f'Output Path: {output_path}')
-        for t in array_paras:
-            self.controller.msg_box.console(f'Generating {t}...')
-            if variant:
-            # if type(array_paras[t]) == list:
-                for v in array_paras[t]:
-                    chart_im, output_msg = self.gen_chart(t, v)
-                    output_name = self.gen_output_name(output_msg)
-                    self.controller.msg_box.console(f'Exporting {output_name}{timestr}.png...', cr=False)
-                    stat = cv2.imwrite(f'{output_path}\\{output_name}{timestr}.png', chart_im)
-                    if stat:
-                        self.controller.msg_box.console(f'Done', cr=True)        
-                    else:
-                        self.controller.msg_box.console(f'Failed', cr=True)
-            else:
-                chart_im, output_msg = self.gen_chart(t, array_paras[t])
-                output_name = self.gen_output_name(output_msg)
-                self.controller.msg_box.console(f'Exporting {output_name}{timestr}.png...', cr=False)
-                stat = cv2.imwrite(f'{output_path}\\{output_name}{timestr}.png', chart_im)
-                if stat:
-                    self.controller.msg_box.console(f'Done', cr=True)        
-                else:
-                    self.controller.msg_box.console(f'Failed', cr=True)
+            return        
+        timestr = time.strftime("%Y%m%d-%H-%M-%S")        
+        array_paras = self.array_para_tab.output_parsed_vals()
+        gen_lt_grid_paras = [*array_paras[0:4]]
+        self.controller.msg_box.console(f'Output Path: {output_path}')        
+        self.controller.msg_box.console(f'Generating RGB Pattern Files...')            
+        array_im, output_msg = self.gen_array(array_paras)
+        array_im = cv2.cvtColor(array_im, cv2.COLOR_BGR2RGB)
+        self.preview_canvas.update_im(array_im)
+        self.controller.msg_box.console(output_msg)
+        header, output_fn = gen_LT_grid_fn(*gen_lt_grid_paras)
+        for i, c in enumerate(['R', 'G', 'B']):             
+            np.savetxt(f'{output_path}\\{output_fn}_{c}_{timestr}.txt', array_im[:, :, i], fmt='%d', delimiter=' ', header=header, comments='')
+        self.controller.msg_box.console(f'Exporting {output_fn}_{timestr}.png...', cr=False)
+        stat = cv2.imwrite(f'{output_path}\\{output_fn}_{timestr}.png', array_im)
+        if stat:
+            self.controller.msg_box.console(f'Done', cr=True)        
+        else:
+            self.controller.msg_box.console(f'Failed', cr=True)
         return
-
-    def gen_output_name(self, chart_output_msg):
-        out_paras = chart_output_msg.replace('\n', ',').split(',')        
-        out_paras_dict = {}
-        for i in range(len(out_paras) - 1):
-            p = out_paras[i]
-            para = p.split(':')
-            out_paras_dict[para[0]] = para[1].lstrip()        
-        output_name = ''
-        for p in out_paras_dict:
-            if p in {'Chart Type', 'Resolution', 'Grid Dimension', 'Grille Size', 'Padding'}:
-                output_name += f'{out_paras_dict[p]}_'        
-        return output_name        
+     
 
 class Controller():
     def __init__(self, msg_box, preset_file_load, output_path, preview_canvas):

@@ -41,6 +41,10 @@ class ParameterTab(ttk.Frame):
                 def ok(event):
                     """Change item value."""
                     para_name = self.tree.set(item, '#1')
+                    if self.parameters[para_name]['regex'] is None:
+                        self.tree.set(item, column, entry.get())
+                        entry.destroy()
+                        return
                     regex = re.compile(eval(self.parameters[para_name]['regex']))
                     if regex.search(entry.get()):
                         self.tree.set(item, column, entry.get())
