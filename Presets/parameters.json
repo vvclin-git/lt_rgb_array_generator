@@ -2,16 +2,16 @@
     "RGB_array_parameters": {
         "Scale": {"value":"0.5", "type":"value", "regex": "r'^[-]*\\d+[.]\\d+$'", "parser": "float(val)", "options": null},
         "Pixel Number": {"value":"5x5", "type":"value", "regex":"r'^\\d+x\\d+$'", "parser":"(int(val.split('x')[0]), int(val.split('x')[1]))", "options": null},
-        "Pixel Pitch": {"value":"60x60", "type":"value", "regex": "^\\\\d+\\\\.\\\\d+x\\\\d+\\\\.\\\\d+$", "parser": "(float(val.split('x')[0]), float(val.split('x')[1]))", "options": null},
-        "Pixel Size": {"value":"50x50", "type":"value", "regex": "^\\\\d+\\\\.\\\\d+x\\\\d+\\\\.\\\\d+$", "parser": "(float(val.split('x')[0]), float(val.split('x')[1]))", "options": null},
-        "Row Offset": {"value":"0", "type":"value", "regex": "^[-]*\\d+[.]\\d+$", "parser": "float(val)", "options": null},
-        "Sub-pixel Pitch": {"value":"30x30", "type":"value", "regex": "^\\\\d+\\\\.\\\\d+x\\\\d+\\\\.\\\\d+$", "parser": "(float(val.split('x')[0]), float(val.split('x')[1]))", "options": null},
-        "Sub-pixel Size": {"value":"20x20", "type":"value", "regex": "^\\\\d+\\\\.\\\\d+x\\\\d+\\\\.\\\\d+$", "parser": "(float(val.split('x')[0]), float(val.split('x')[1]))", "options": null},
-        "Sub-pixel Padding": {"value":"0x0", "type":"value", "regex": "^\\\\d+\\\\.\\\\d+x\\\\d+\\\\.\\\\d+$", "parser": "(float(val.split('x')[0]), float(val.split('x')[1]))", "options": null},
+        "Pixel Pitch": {"value":"60x60", "type":"value", "regex": "r'^([1-9]\\d*(\\.\\d+)?|0\\.[1-9]\\d*)x([1-9]\\d*(\\.\\d+)?|0\\.[1-9]\\d*)$'", "parser": "(float(val.split('x')[0]), float(val.split('x')[1]))", "options": null},
+        "Pixel Size": {"value":"50x50", "type":"value", "regex": "r'^([1-9]\\d*(\\.\\d+)?|0\\.[1-9]\\d*)x([1-9]\\d*(\\.\\d+)?|0\\.[1-9]\\d*)$'", "parser": "(float(val.split('x')[0]), float(val.split('x')[1]))", "options": null},
+        "Row Offset": {"value":"0", "type":"value", "regex": "r'^[-]*\\d+[.]\\d+$'", "parser": "float(val)", "options": null},
+        "Sub-pixel Pitch": {"value":"30x30", "type":"value", "regex": "r'^([1-9]\\d*(\\.\\d+)?|0\\.[1-9]\\d*)x([1-9]\\d*(\\.\\d+)?|0\\.[1-9]\\d*)$'", "parser": "(float(val.split('x')[0]), float(val.split('x')[1]))", "options": null},
+        "Sub-pixel Size": {"value":"20x20", "type":"value", "regex": "r'^([1-9]\\d*(\\.\\d+)?|0\\.[1-9]\\d*)x([1-9]\\d*(\\.\\d+)?|0\\.[1-9]\\d*)$'", "parser": "(float(val.split('x')[0]), float(val.split('x')[1]))", "options": null},
+        "Sub-pixel Padding": {"value":"0x0", "type":"value", "regex": "r'^([1-9]\\d*(\\.\\d+)?|0\\.[1-9]\\d*)x([1-9]\\d*(\\.\\d+)?|0\\.[1-9]\\d*)$'", "parser": "(float(val.split('x')[0]), float(val.split('x')[1]))", "options": null},
         "Sub-pixel Order": {"value":"RG|BW", "type":"value", "regex":null, "parser":null, "options": null}
     },
     "LT_parameters": {
         "PID": {"value":"0", "type":"value", "regex":"r'^[1-9]\\d*$'", "parser":"int(val)", "options":null},
-        "Source Key": {"value":"", "type":"value", "regex":null, "parser":null, "options": null}
+        "Source Key": {"value":"LENS_MANAGER[1].ILLUM_MANAGER[Illumination_Manager].SOURCES[Source_List].CUBE_SURFACE_SOURCE[CuboidSource_R].NATIVE_EMITTER[LeftSurface].SURFACE_GRID_APODIZER[SurfaceGridApodizer].LoadFileName", "type":"value", "regex":"r'(.*CUBE_SURFACE_SOURCE\\[([a-zA-Z0-9_]+)_(R|G|B)\\])(.*\\.NATIVE_EMITTER\\[[a-zA-Z0-9_]+\\]\\.SURFACE_GRID_APODIZER\\[SurfaceGridApodizer\\]\\.LoadFileName$)'", "parser":null, "options": null}        
     }
 }

@@ -1,5 +1,30 @@
 import numpy as np
 import cv2
+import re
+
+def gen_lt_key_vars(input_string):
+    pattern = r"(.*CUBE_SURFACE_SOURCE\[([a-zA-Z0-9_]+)_(R|G|B)\]\.(NATIVE_EMITTER\[[a-zA-Z0-9_]+\]\.SURFACE_GRID_APODIZER\[SurfaceGridApodizer\])$)"
+
+    match = re.match(pattern, input_string)    
+    if not match:
+        return None  # Return None if the string is invalid
+    # Extract the parts of the string
+    base_string = input_string.split('CUBE_SURFACE_SOURCE')[0]  # Everything before the variant
+    source_name = match.group(2)  # The arbitrary part of the source name
+    variant_type = match.group(3)  # The variant type ("R", "G", or "B")    
+    # Extract the remaining part after "CUBE_SURFACE_SOURCE[...]"
+    # remaining_string = input_string[len(match.group(0)) - len(match.group(1)) - len(f'{source_name}_{variant_type}') - len('CUBE_SURFACE_SOURCE[]'):]    
+    remaining_string = match.group(4)    
+    # Generate other variants
+    variants = {
+        "R": f"{base_string}CUBE_SURFACE_SOURCE[{source_name}_R].{remaining_string}",
+        "G": f"{base_string}CUBE_SURFACE_SOURCE[{source_name}_G].{remaining_string}",
+        "B": f"{base_string}CUBE_SURFACE_SOURCE[{source_name}_B].{remaining_string}"
+    }
+    # Return all variants
+    return variants
+
+
 
 def gen_LT_grid_fn(px_scale, px_num, px_pitch, px_size):    
     px_pitch = (np.array(px_pitch) * px_scale).astype('uint')

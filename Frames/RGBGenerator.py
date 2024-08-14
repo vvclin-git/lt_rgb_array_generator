@@ -1,7 +1,7 @@
 import imp
 import os
 from tkinter import filedialog
-from rgb_array_generator import gen_array, draw_pixel_frame, gen_LT_grid_fn
+from rgb_array_generator import gen_array, draw_pixel_frame, gen_LT_grid_fn, gen_lt_key_vars
 import re
 import time
 import json
@@ -10,6 +10,7 @@ from Widgets import MsgBox
 from Widgets import PresetFileLoad
 from Widgets import PathBrowse
 from Widgets import ParameterTab
+from Widgets import FileBrowse
 from PIL import Image, ImageTk
 from Widgets.ZoomCanvas import *
 
@@ -98,13 +99,14 @@ class RGBGenerator(Frame):
         self.lt = None
         self.lt_frame = LabelFrame(self.settings, text='LightTools')
         self.lt_frame.pack(side='top', expand=1, fill='x')
+        self.lt_grid_file_load = FileBrowse(self.lt_frame, 'LT Grid File', 'Path', 'Please select a LT Grid File (*.txt)')
+        self.lt_grid_file_load.pack(side='top', expand=1, fill='x')
         self.lt_link_para_tab = ParameterTab(self.lt_frame, lt_paras)
         self.lt_link_para_tab.pack(side='top', expand=1, fill='x', pady=5, padx=2)
         self.lt_set_btn = Button(self.lt_frame, text='Set RGB Array', command=self.lt_set)
         self.lt_set_btn.pack(side='right', padx=2, pady=5)   
         self.lt_link_btn = Button(self.lt_frame, text='Link LT', command=self.lt_link)
         self.lt_link_btn.pack(side='right', padx=2, pady=5)       
-        
         # Widget Initialization
         self.controller = Controller(self.msg_box, self.preset_file_load, self.output_path, self.preview_canvas)
 
@@ -137,14 +139,37 @@ class RGBGenerator(Frame):
         return
     
     def lt_set(self):
-        self.lt
-        apod_file_path_key = f'LENS_MANAGER[1].COMPONENTS[Components].GROUP[group_Freeform_PBS_KF_2D_Complete].GROUP[group_RGB_24um_1.92x1.95].CUBE_SURFACE_SOURCE[CuboidSource_{color}_1].NATIVE_EMITTER[RightSurface].SURFACE_GRID_APODIZER[SurfaceGridApodizer]'
-        apod_fn = replace_color(a, color)
-        print(f'Setting up apod file as: {apod_fn}')
-        lt.DbSet(apod_file_path_key, 'LoadFileName', f"D:\\Garden\\Wayne\\Python\\LT Freeform\\Apod Files\\{apod_fn}.txt")
-        lt.DbSet(apod_file_path_key, 'LoadFileName', f"D:\\Garden\\Wayne\\Python\\LT Freeform\\Apod Files\\{apod_fn}.txt")
-        lt.DbSet(apod_file_path_key, 'LoadFileName', f"D:\\Garden\\Wayne\\Python\\LT Freeform\\Apod Files\\{apod_fn}.txt")
+        if self.lt == None:
+            self.controller.msg_box.console('No LT Connection')
+            return
+        
+        lt_paras = self.lt_link_para_tab.output_parsed_vals()
+        lt_source_key = lt_paras[1][0:-13]
+        lt_source_keys = gen_lt_key_vars(lt_source_key)
+        lt_grid_fn = self.lt_grid_file_load.get_path()
+        lt_grid_fns = { "R": f'{lt_grid_fn[0:-23]}R{lt_grid_fn[-22:]}',
+                        "G": f'{lt_grid_fn[0:-23]}G{lt_grid_fn[-22:]}',
+                        "B": f'{lt_grid_fn[0:-23]}B{lt_grid_fn[-22:]}' }
+        
+        # check both key and grid file exist before applying grid file to surface
+        for c in ['R', 'G', 'B']:
+            _, stat = self.lt.DbGet(lt_source_keys[c], 'LoadFileName')
+            if stat != 0:
+               self.controller.msg_box.console(f'Invalid key detected for color {c}, abort')
+               return                       
+            if not os.path.exists(lt_grid_fns[c]):
+               self.controller.msg_box.console(f'Grid file not available for color {c}, abort')
+               return 
+
+        for c in ['R', 'G', 'B']:
+            stat = self.lt.DbSet(lt_source_keys[c], 'LoadFileName', lt_grid_fns[c].replace('/', '\\'))
+            if stat != 1 and stat != 0:
+                self.controller.msg_box.console(f'Error applying source grid for color: {c}')
+            else:
+                self.controller.msg_box.console(f'Applied {lt_grid_fns[c]} to source grid')
+                
         return
+    
     def gen_array(self, para_list):                
         array_im, output_msg = gen_array(*para_list)
         # chart_im, output_msg, _ = CHART_FN_DICT[chart_type](*para_list)
@@ -170,7 +195,8 @@ class RGBGenerator(Frame):
         self.controller.msg_box.console(f'Exporting {output_fn}_{timestr}.png...', cr=False)
         stat = cv2.imwrite(f'{output_path}\\{output_fn}_{timestr}.png', cv2.cvtColor(array_im, cv2.COLOR_RGB2BGR))
         if stat:
-            self.controller.msg_box.console(f'Done', cr=True)        
+            self.controller.msg_box.console(f'Done', cr=True)
+            self.lt_grid_file_load.file_path.set(f'{output_path}\\{output_fn}_{c}_{timestr}.txt')        
         else:
             self.controller.msg_box.console(f'Failed', cr=True)
         return
@@ -181,6 +207,5 @@ class Controller():
         self.msg_box = msg_box
         self.msg_box = msg_box
         self.preset_file_load = preset_file_load
-        self.output_file_path = output_path
-        
+        self.output_file_path = output_path        
         self.preview_canvas = preview_canvas
