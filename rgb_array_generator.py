@@ -31,7 +31,7 @@ def gen_LT_grid_fn(px_scale, px_num, px_pitch, px_size):
     px_num =  (np.array(px_num)).astype('uint')
     output_res = (px_pitch * px_num)
     dim = output_res / px_scale
-    header = f"MESH: {output_res[1]} {output_res[0]} {dim[0] / 1000 * (-0.5)} {dim[1] / 1000 * (-0.5)} {dim[0] / 1000 * 0.5} {dim[1] / 1000 * 0.5}"    
+    header = f"MESH: {output_res[0]} {output_res[1]} {dim[0] / 1000 * (-0.5)} {dim[1] / 1000 * (-0.5)} {dim[0] / 1000 * 0.5} {dim[1] / 1000 * 0.5}"    
     output_fn = f'px scale {px_scale}_{px_size[0]}x{px_size[1]}_{px_num[0]}x{px_num[1]}_{dim[0]}x{dim[1]}'        
     return header, output_fn
 
