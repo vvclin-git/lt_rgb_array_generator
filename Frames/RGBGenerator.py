@@ -99,7 +99,7 @@ class RGBGenerator(Frame):
         self.lt = None
         self.lt_frame = LabelFrame(self.settings, text='LightTools')
         self.lt_frame.pack(side='top', expand=1, fill='x')
-        self.lt_grid_file_load = FileBrowse(self.lt_frame, 'LT Grid File', 'Path', 'Please select a LT Grid File (*.txt)')
+        self.lt_grid_file_load = FileBrowse(self.lt_frame, 'LT Grid File', 'Path', 'Please select a LT Grid File (*.txt)',('LT Grid', '*.txt'), load_action=self.preview_grid)
         self.lt_grid_file_load.pack(side='top', expand=1, fill='x')
         self.lt_link_para_tab = ParameterTab(self.lt_frame, lt_paras)
         self.lt_link_para_tab.pack(side='top', expand=1, fill='x', pady=5, padx=2)
@@ -115,7 +115,8 @@ class RGBGenerator(Frame):
         self.preset_file_load.init_linked_tabs(linked_tabs)
         self.preset_file_load.preset_path.set(PRESET_PATH)
         self.preset_file_load.load_preset()
-        self.preset_file_load.set_controller(self.controller)   
+        self.preset_file_load.set_controller(self.controller)
+        self.lt_grid_file_load.set_controller(self.controller)   
 
     def preview(self):        
         array_paras = self.array_para_tab.output_parsed_vals()
@@ -127,6 +128,26 @@ class RGBGenerator(Frame):
         self.controller.msg_box.console(output_msg)
         return
     
+    def preview_grid(self):
+        lt_grid_fn = self.lt_grid_file_load.get_path()
+        lt_grid_fns = { "R": f'{lt_grid_fn[0:-23]}R{lt_grid_fn[-22:]}',
+                        "G": f'{lt_grid_fn[0:-23]}G{lt_grid_fn[-22:]}',
+                        "B": f'{lt_grid_fn[0:-23]}B{lt_grid_fn[-22:]}' }        
+        # check both key and grid file exist before applying grid file to surface
+        lt_grid_list = []
+        for c in ['R', 'G', 'B']:                      
+            if not os.path.exists(lt_grid_fns[c]):
+               self.controller.msg_box.console(f'Grid file not available for color {c}, abort')
+               return  
+            lt_grid_list.append(np.loadtxt(lt_grid_fns[c], skiprows=1))
+        array_im = np.zeros([lt_grid_list[0].shape[0], lt_grid_list[0].shape[1], 3], dtype='uint8')
+        array_im[:, :, 0] = lt_grid_list[0]
+        array_im[:, :, 1] = lt_grid_list[1]
+        array_im[:, :, 2] = lt_grid_list[2]
+        array_im = cv2.cvtColor(array_im, cv2.COLOR_BGR2RGB)
+        self.preview_canvas.update_im(array_im)
+        return
+
     def lt_link(self):
         lt_paras = self.lt_link_para_tab.output_parsed_vals()
         pid = lt_paras[0]
