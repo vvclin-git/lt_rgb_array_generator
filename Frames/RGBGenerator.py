@@ -127,6 +127,7 @@ class RGBGenerator(Frame):
         with open(temp_path, 'r') as f:
             loaded_paras = json.load(f)
         self.array_para_tab.parameter_chg(loaded_paras)
+        self.controller.msg_box.console(f'RGB Array Parameter File Loaded From: {temp_path}')
         return
     
     def preview(self):        
