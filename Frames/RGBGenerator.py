@@ -91,7 +91,10 @@ class RGBGenerator(Frame):
         self.output_btn.pack(side='right', padx=2, pady=5)        
         
         self.preview_btn = Button(self.array_para_frame, text='Preview', command=self.preview)
-        self.preview_btn.pack(side='right', padx=2, pady=5)
+        self.preview_btn.pack(side='right', padx=2, pady=5)        
+
+        self.load_paras_btn = Button(self.array_para_frame, text='Load', command=self.load_paras)
+        self.load_paras_btn.pack(side='right', padx=2, pady=5)        
 
         # LT Link & RGB Array Application
         self.lt_error = LT_Error()
@@ -118,6 +121,15 @@ class RGBGenerator(Frame):
         self.preset_file_load.set_controller(self.controller)
         self.lt_grid_file_load.set_controller(self.controller)   
 
+    def load_paras(self):
+        cur_path = os.getcwd()        
+        temp_path = filedialog.askopenfilename(parent=self, initialdir=cur_path, filetypes=[('JSON File', '*.json')], title='Please select a JSON File (*.json)')
+        with open(temp_path, 'r') as f:
+            loaded_paras = json.load(f)
+        self.array_para_tab.parameter_chg(loaded_paras)
+        self.controller.msg_box.console(f'RGB Array Parameter File Loaded From: {temp_path}')
+        return
+    
     def preview(self):        
         array_paras = self.array_para_tab.output_parsed_vals()
         array_im, output_msg = self.gen_array(array_paras)
@@ -236,7 +248,10 @@ Pixel Size: {px_size} µm
         stat = cv2.imwrite(f'{output_path}\\{output_fn}_{timestr}.png', cv2.cvtColor(array_im, cv2.COLOR_RGB2BGR))
         if stat:
             self.controller.msg_box.console(f'Done', cr=True)
-            self.lt_grid_file_load.file_path.set(f'{output_path}\\{output_fn}_{c}_{timestr}.txt')        
+            self.lt_grid_file_load.file_path.set(f'{output_path}\\{output_fn}_{c}_{timestr}.txt')
+            vals_dump = self.array_para_tab.dump_values()
+            with open(f'{output_path}\\{output_fn}_{timestr}.json', 'w') as f:
+                json.dump(vals_dump, f)
         else:
             self.controller.msg_box.console(f'Failed', cr=True)
         return
