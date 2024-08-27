@@ -3,9 +3,11 @@ import tkinter as tk
 from tkinter import Button, Entry, ttk
 import re
 from typing import Text
-
+from tkinter import filedialog
 import cv2
 from tkinter import messagebox
+import os
+import json
 
 
 class ParameterTab(ttk.Frame):
@@ -99,6 +101,13 @@ class ParameterTab(ttk.Frame):
             output.append(self.tree.item(p)['values'])
         return output
     
+    def dump_values(self):
+        vals = self.output_values()
+        output = {}
+        for v in vals:
+            output[v[0]] = {'value':v[1]}
+        return output
+
     def output_parsed_vals(self):
         output_vals = self.output_values()
         parsed_paras = []
@@ -142,13 +151,15 @@ class ParameterTab(ttk.Frame):
                 else:
                     raise TypeError('Incorrect data format')
         return
-    
+ 
     def parameter_chg(self, selected_parameters):
         self.clear()
-        self.parameters = selected_parameters
+        # self.parameters = selected_parameters
         for p in selected_parameters:
             # print(p)            
-            self.tree.insert("", "end", values=(p, selected_parameters[p]['value']), tags=selected_parameters[p]['type'])
+            self.parameters[p]['value'] = selected_parameters[p]['value']
+            self.tree.insert("", "end", values=(p, self.parameters[p]['value']), tags=self.parameters[p]['type'])
+            # self.tree.insert("", "end", values=(p, selected_parameters[p]['value']))
         return
 
     def fit_height(self):
@@ -180,13 +191,42 @@ if __name__ == '__main__':
         for v in parsed:
             print(f'Type: {type(v)}, Value: {v}')
     
+    def print_vals():
+        vals = para_tab.output_values()
+        for v in vals:
+            print(v)
+
+    def dump_vals():
+        vals_dump = para_tab.dump_values()
+        print(vals_dump)
+        with open('test.json', 'w') as f:
+            json.dump(vals_dump, f)
+
     def submit_val_test():
         parameter = para_input.get()
         value = val_input.get()
         para_tab.submit_value(parameter, value)
 
+    def load_vals():
+        cur_path = os.getcwd()        
+        temp_path = filedialog.askopenfilename(initialdir=cur_path, filetypes=[('JSON File', '*.json')], title='Please select a JSON File (*.json)')
+        with open(temp_path, 'r') as f:
+            loaded_paras = json.load(f)
+        print(loaded_paras)
+        para_tab.parameter_chg(loaded_paras)
+
+
     parse_test_btn = Button(root, text='Print Parsed Values', command=print_parsed_vals)
     parse_test_btn.pack()
+
+    vals_test_btn = Button(root, text='Print Values', command=print_vals)
+    vals_test_btn.pack()
+
+    vals_dump_btn = Button(root, text='Dump Values', command=dump_vals)
+    vals_dump_btn.pack()
+
+    vals_load_btn = Button(root, text='Load Values', command=load_vals)
+    vals_load_btn.pack()
     
     submit_test_btn = Button(root, text='Submit Test', command=submit_val_test)
     submit_test_btn.pack()
