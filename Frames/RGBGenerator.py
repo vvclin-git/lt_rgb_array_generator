@@ -127,9 +127,27 @@ class RGBGenerator(Frame):
         self.preview_canvas.update_im(array_im)
         self.controller.msg_box.console(output_msg)
         return
-    
+    # @staticmethod
     def preview_grid(self):
         lt_grid_fn = self.lt_grid_file_load.get_path()
+        with open(lt_grid_fn, 'r') as f:
+            lt_grid_header = f.readline()
+        lt_grid_header = lt_grid_header.split(' ')
+        grid_res = np.array(lt_grid_header[1:3], dtype='uint')
+        grid_dim = np.array(lt_grid_header[3:], dtype='float')
+        grid_dim = [grid_dim[2] - grid_dim[0], grid_dim[3] - grid_dim[1]]
+        lt_grid_fn_list = lt_grid_fn.split('/')[-1]
+        lt_grid_fn_list = lt_grid_fn_list.split('_')
+        px_scale = lt_grid_fn_list[0].split(' ')[-1]
+        px_size = lt_grid_fn_list[1]
+        output_msg = f'''LT grid file loaded: {lt_grid_fn}
+Grid File Resolution: {grid_res[0]}x{grid_res[1]}
+Grid Dimension: {grid_dim[0]}x{grid_dim[1]} mm
+Pixel Scale: {px_scale}
+Pixel Size: {px_size} µm                        
+                      '''
+        self.controller.msg_box.console(output_msg)
+        
         lt_grid_fns = { "R": f'{lt_grid_fn[0:-23]}R{lt_grid_fn[-22:]}',
                         "G": f'{lt_grid_fn[0:-23]}G{lt_grid_fn[-22:]}',
                         "B": f'{lt_grid_fn[0:-23]}B{lt_grid_fn[-22:]}' }        
@@ -146,6 +164,7 @@ class RGBGenerator(Frame):
         array_im[:, :, 2] = lt_grid_list[2]
         array_im = cv2.cvtColor(array_im, cv2.COLOR_BGR2RGB)
         self.preview_canvas.update_im(array_im)
+
         return
 
     def lt_link(self):
